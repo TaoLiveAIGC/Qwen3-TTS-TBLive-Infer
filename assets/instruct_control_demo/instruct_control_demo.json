@@ -1,0 +1,42 @@
+[
+  {
+    "type": "组合",
+    "text": "家人们注意了,这款面霜原价五百九,直播间到手价你们知道是多少吗<sil_L2>?[speed_d2]只要九十九<sil_L2>,别犹豫了赶紧冲.",
+    "audio": "combo_spk1_0_7.wav"
+  },
+  {
+    "type": "组合",
+    "text": "有没有姐妹想了解这款面霜?<sil_L2>这款面霜,我真的想让姐妹们都试试,[speed_d2]超级好用,[speed_e2]有人问敏感肌可以用吗?当然可以.",
+    "audio": "combo_spk115_2_6.wav"
+  },
+  {
+    "type": "停顿",
+    "text": "你觉得这个价格贵吗<sil_L4>我跟你说,专柜同款要三倍的价钱.",
+    "audio": "sil_L4_spk26_9_4.wav"
+  },
+  {
+    "type": "停顿",
+    "text": "两杯奶茶的钱买一件外套,过分吗<sil_L4>一点都不过分,姐妹们.",
+    "audio": "sil_L4_spk1_11_4.wav"
+  },
+  {
+    "type": "speed_e2",
+    "text": "机制就这么简单,买一送一还能叠券,[speed_e2]想要的家人们直接给我冲.",
+    "audio": "speed_e2_spk1_3_4.wav"
+  },
+  {
+    "type": "speed_e2",
+    "text": "咱们这个链接上架就秒了一半,价格的话真的没话说了,[speed_e2]赶紧给我拍起来.",
+    "audio": "speed_e2_spk4_2_1.wav"
+  },
+  {
+    "type": "speed_d2",
+    "text": "别的我都可以不讲,你就给我记住一点,[speed_d2]今天到手价,一百五十九.",
+    "audio": "speed_d2_spk1_5_5.wav"
+  },
+  {
+    "type": "speed_d2",
+    "text": "呃再跟你们说一遍你们听好了啊,[speed_d2]日抛三十片装,单片算下来,不到两块钱.",
+    "audio": "speed_d2_spk1_1_2.wav"
+  }
+]

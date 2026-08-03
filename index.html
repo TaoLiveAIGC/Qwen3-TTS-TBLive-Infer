@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qwen3-TTS-TBLive · Demo</title>
+<style>
+  :root{
+    --bg:#20232f; --bg2:#252938; --panel:#2b3040; --panel2:#31374a;
+    --ink:#e7e9f2; --soft:#c2c6d6; --muted:#8b90a6; --line:rgba(255,255,255,.08);
+    --brand:#8b8cf0; --brand2:#b18cf5; --female:#f472b6; --male:#38bdf8;
+    --shadow:0 10px 30px rgba(0,0,0,.28);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+
+  nav{position:sticky;top:0;z-index:50;background:rgba(32,35,47,.8);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav-in{max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+  .brand{font-weight:700;font-size:17px}
+  .brand span{background:linear-gradient(90deg,var(--brand),var(--brand2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .brand small{font-size:11px;font-weight:600;color:var(--muted);margin-left:8px;padding:2px 8px;border-radius:6px;background:rgba(139,140,240,.14);border:1px solid rgba(139,140,240,.28)}
+  .nav-links a{color:var(--muted);text-decoration:none;font-size:14px;margin-left:22px;transition:color .2s}
+  .nav-links a:hover{color:var(--ink)}
+
+  header{position:relative;overflow:hidden;text-align:center;padding:84px 24px 70px}
+  header::before{content:"";position:absolute;inset:0;z-index:0;
+    background:radial-gradient(1000px 420px at 50% -140px,rgba(177,140,245,.22),transparent 68%),
+               radial-gradient(760px 340px at 12% -40px,rgba(139,140,240,.18),transparent 62%)}
+  .hero-in{position:relative;z-index:1;max-width:840px;margin:0 auto}
+  .pill{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:#cfc9ff;
+    background:rgba(139,140,240,.14);border:1px solid rgba(139,140,240,.3);padding:6px 14px;border-radius:999px;margin-bottom:22px;font-weight:600}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 4px rgba(139,140,240,.22)}
+  h1{font-size:clamp(34px,6vw,52px);line-height:1.14;font-weight:800;letter-spacing:-.5px}
+  h1 em{font-style:normal;background:linear-gradient(90deg,var(--brand),var(--brand2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{margin:20px auto 0;max-width:660px;font-size:17px;color:var(--soft)}
+  .cta{margin-top:32px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:11px;font-size:14.5px;font-weight:600;text-decoration:none;transition:transform .15s,box-shadow .2s}
+  .btn-primary{background:linear-gradient(90deg,var(--brand),var(--brand2));color:#191a24;box-shadow:0 8px 22px rgba(139,140,240,.34)}
+  .btn-primary:hover{transform:translateY(-2px)}
+  .btn-ghost{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--brand);color:#cfc9ff}
+
+  section{max-width:1280px;margin:0 auto;padding:20px 24px 40px;scroll-margin-top:72px}
+  .sec-head{text-align:center;margin:44px 0 26px}
+  .sec-head h2{font-size:30px;font-weight:800;letter-spacing:-.3px;display:inline-flex;align-items:center;gap:14px}
+  .sec-head p{color:var(--muted);margin-top:10px;font-size:15.5px}
+  .sec-num{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;padding:0 12px;border-radius:12px;
+    font-size:15px;font-weight:800;letter-spacing:.5px;color:#191a24;
+    background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:0 6px 18px rgba(139,140,240,.32)}
+
+  .placeholder{border:1px dashed var(--line);background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border-radius:20px;padding:56px 28px;text-align:center;box-shadow:var(--shadow)}
+  .placeholder .ph-icon{font-size:34px;margin-bottom:14px;opacity:.9}
+  .placeholder .ph-title{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px}
+  .placeholder .ph-desc{color:var(--muted);font-size:14.5px;max-width:520px;margin:0 auto}
+  .placeholder .ph-badge{display:inline-flex;align-items:center;gap:6px;margin-top:18px;font-size:12px;font-weight:700;
+    color:#cfc9ff;background:rgba(139,140,240,.14);border:1px solid rgba(139,140,240,.3);
+    padding:5px 12px;border-radius:999px;letter-spacing:.4px}
+
+  .tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:6px}
+  .tab{cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--soft);padding:10px 20px;border-radius:12px;font-size:15px;font-weight:600;transition:all .2s}
+  .tab .en{font-size:12px;opacity:.65;margin-left:7px;font-weight:500}
+  .tab:hover{border-color:var(--brand);color:var(--ink)}
+  .tab.active{background:linear-gradient(90deg,var(--brand),var(--brand2));color:#191a24;border-color:transparent;box-shadow:0 6px 18px rgba(139,140,240,.3)}
+  .tab.active .en{opacity:.8}
+  .style-desc{text-align:center;color:var(--muted);font-size:14px;margin:14px 0 24px}
+
+  .spk{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:22px 22px 8px;margin-bottom:22px}
+  .spk-head{display:flex;align-items:center;gap:11px;margin-bottom:6px;padding-bottom:14px;border-bottom:1px dashed var(--line)}
+  .spk-name{font-size:18px;font-weight:700}
+  .spk-id{font-size:11.5px;color:var(--muted);font-family:ui-monospace,Menlo,Consolas,monospace;margin-left:2px}
+  .chip{font-size:12px;font-weight:600;padding:3px 11px;border-radius:999px}
+  .chip.female{color:#fbcfe8;background:rgba(244,114,182,.16)}
+  .chip.male{color:#bae6fd;background:rgba(56,189,248,.16)}
+
+  .sample{padding:18px 0;border-bottom:1px solid var(--line)}
+  .spk .sample:last-child{border-bottom:none}
+  .s-label{display:inline-block;font-size:11.5px;font-weight:700;color:#cfc9ff;background:rgba(139,140,240,.14);border-radius:6px;padding:2px 9px;margin-bottom:10px;letter-spacing:.3px}
+  .s-text{font-size:14.5px;color:var(--soft);background:var(--bg2);border:1px solid var(--line);border-radius:11px;padding:13px 15px;margin-bottom:14px;max-height:96px;overflow:hidden;position:relative;transition:max-height .3s;cursor:pointer}
+  .s-text.open{max-height:660px}
+  .s-text::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34px;background:linear-gradient(transparent,var(--bg2));pointer-events:none;transition:opacity .2s}
+  .s-text.open::after{opacity:0}
+
+  .players{display:grid;grid-template-columns:repeat(6,1fr);gap:9px}
+  .player{border:1px solid var(--line);border-radius:12px;padding:11px 11px 12px;background:var(--panel2);min-width:0}
+  .player.baseline{background:var(--panel2)}
+  .player.base{background:var(--panel2)}
+  .player.closed{border-color:rgba(251,191,36,.32);background:linear-gradient(180deg,rgba(251,191,36,.07),var(--panel2))}
+  .player.ours{border-color:rgba(139,140,240,.45);background:linear-gradient(180deg,rgba(139,140,240,.12),var(--panel2));box-shadow:0 4px 14px rgba(139,140,240,.14)}
+  .p-top{display:flex;align-items:center;gap:6px;margin-bottom:9px;min-height:22px;flex-wrap:wrap}
+  .p-tag{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .p-tag.baseline{color:var(--muted)}
+  .p-tag.base{color:var(--soft)}
+  .p-tag.closed{color:#fcd34d}
+  .p-tag.ours{color:#cfc9ff}
+  .badge{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:999px;letter-spacing:.3px;flex-shrink:0}
+  .badge-ours{color:#191a24;background:linear-gradient(90deg,var(--brand),var(--brand2))}
+  .badge-baseline{color:var(--muted);background:rgba(255,255,255,.05);border:1px solid var(--line)}
+  .badge-closed{color:#191a24;background:linear-gradient(90deg,#fbbf24,#f59e0b)}
+  audio{width:100%;height:38px;filter:invert(.92) hue-rotate(180deg) saturate(.6)}
+
+  .vgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:start}
+  .vcard{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 18px 16px;
+    border-color:rgba(139,140,240,.35)}
+  .vcard-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .vcard-head .spk-name{font-size:16.5px;font-weight:700}
+  .v-style{font-size:11.5px;font-weight:700;color:#cfc9ff;background:rgba(139,140,240,.14);border-radius:6px;padding:3px 10px;letter-spacing:.3px}
+  .v-wrap{position:relative;width:100%;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:9/16;border:1px solid var(--line)}
+  .v-wrap video{width:100%;height:100%;object-fit:contain;display:block;background:#000}
+  .v-tabs{display:flex;gap:7px;margin:13px 0 11px}
+  .v-tab{flex:1;cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--soft);
+    padding:7px 0;border-radius:9px;font-size:12.5px;font-weight:600;text-align:center;transition:all .18s}
+  .v-tab:hover{border-color:var(--brand);color:var(--ink)}
+  .v-tab.active{background:linear-gradient(90deg,var(--brand),var(--brand2));color:#191a24;border-color:transparent}
+  .v-text{font-size:13px;color:var(--soft);background:var(--bg2);border:1px solid var(--line);border-radius:11px;
+    padding:11px 13px;max-height:78px;overflow:hidden;position:relative;transition:max-height .3s;cursor:pointer;line-height:1.55}
+  .v-text.open{max-height:520px}
+  .v-text::after{content:"";position:absolute;left:0;right:0;bottom:0;height:30px;background:linear-gradient(transparent,var(--bg2));pointer-events:none;transition:opacity .2s}
+  .v-text.open::after{opacity:0}
+
+  .ctrl-legend{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:28px}
+  .leg{display:flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 14px;box-shadow:var(--shadow)}
+  .leg .leg-txt{font-size:12.5px;color:var(--muted)}
+  .tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:2px 8px;border-radius:7px;
+    font-family:ui-monospace,Menlo,Consolas,monospace;white-space:nowrap;vertical-align:middle}
+  .tag-sil{color:#fcd34d;background:rgba(251,191,36,.14);border:1px solid rgba(251,191,36,.32)}
+  .tag-fast{color:#fbcfe8;background:rgba(244,114,182,.14);border:1px solid rgba(244,114,182,.32)}
+  .tag-slow{color:#bae6fd;background:rgba(56,189,248,.14);border:1px solid rgba(56,189,248,.32)}
+  .ctrl-group{margin-bottom:24px}
+  .ctrl-grp-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+  .ctrl-grp-head .g-name{font-size:16.5px;font-weight:700}
+  .ctrl-grp-head .g-desc{font-size:13px;color:var(--muted)}
+  .cgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .ccard{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);
+    padding:16px 16px 15px;border-color:rgba(139,140,240,.3)}
+  .c-text{font-size:14.5px;color:var(--ink);line-height:2;margin-bottom:14px}
+
+  .oss-info{max-width:1280px;margin:8px auto 0;padding:0 24px;text-align:center;color:var(--muted);font-size:12.5px}
+  .oss-info code{background:var(--panel);border:1px solid var(--line);padding:2px 8px;border-radius:6px;font-family:ui-monospace,Menlo,Consolas,monospace}
+
+  footer{max-width:1280px;margin:0 auto;padding:36px 24px 60px;text-align:center;color:var(--muted);font-size:13.5px;border-top:1px solid var(--line)}
+  footer a{color:#cfc9ff;text-decoration:none}
+
+  @media(max-width:1280px){.players{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:760px){.players{grid-template-columns:repeat(2,1fr)}.cgrid{grid-template-columns:1fr}}
+  @media(max-width:520px){.players{grid-template-columns:1fr}header{padding:60px 20px 48px}}
+  @media(max-width:820px){.vgrid{grid-template-columns:repeat(2,1fr);max-width:560px;margin:0 auto}}
+  @media(max-width:520px){.vgrid{grid-template-columns:1fr;max-width:340px}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <div class="brand">Qwen3-TTS-<span>TBLive</span></div>
+    <div class="nav-links">
+      <a href="#sec-script">01 文案对比</a>
+      <a href="#sec-control">02 指令控制</a>
+      <a href="#sec-video">03 数字人视频</a>
+      <a href="https://github.com/TaoLiveAIGC/Qwen3-TTS-TBLive" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="hero-in">
+    <div class="pill"><span class="dot"></span>Live-Streaming Domain TTS · Open-Source Demo</div>
+    <h1>基于 Qwen3-TTS 的<br><em>直播领域语音合成大模型</em></h1>
+    <p class="sub">基于 Qwen3-TTS-Base 基座结合高质量直播领域数据继续训练，此模型在 Zero-shot 和 SFT 推理效果上更符合直播风格的表达节奏与情绪张力。下面对比同一文本下基座模型与 TBLive 领域模型的合成效果。全部音频与文本随仓库一起开源，打开页面即可试听。</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="#sec-script">▶ 试听 Demo</a>
+      <a class="btn btn-ghost" href="https://github.com/TaoLiveAIGC/Qwen3-TTS-TBLive" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</header>
+
+<section id="sec-script">
+  <div class="sec-head">
+    <h2><span class="sec-num">01</span>直播文案推理对比</h2>
+    <p>三种典型直播话术风格 · 两个开源 TTS 基线 · 一个闭源商业 TTS · Qwen3-TTS 基座 vs Qwen3-TTS-TBLive 领域模型（Zero-shot & Custom-voice）</p>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div class="style-desc" id="styleDesc"></div>
+  <div id="panel"></div>
+  <div class="oss-info">数据源：仓库内 <code id="ossBase"></code> · 文本 & 音频随仓库一起发布，无需外链</div>
+</section>
+
+<section id="sec-control">
+  <div class="sec-head">
+    <h2><span class="sec-num">02</span>主播指令控制</h2>
+    <p>在文本中嵌入轻量控制标签，即可精准调节停顿节奏与语速快慢，让直播口播更有张力</p>
+  </div>
+  <div class="ctrl-legend" id="ctrlLegend"></div>
+  <div id="ctrlPanel"></div>
+</section>
+
+<section id="sec-video">
+  <div class="sec-head">
+    <h2><span class="sec-num">03</span>数字人直播视频</h2>
+    <p>Qwen3-TTS-TBLive 语音驱动数字人 · 三种直播风格 · 一男两女 · 竖屏直播场景</p>
+  </div>
+  <div class="vgrid" id="vgrid"></div>
+  <div class="oss-info">视频源：仓库内 <code id="vossBase"></code> · 全部为 9:16 竖屏 H.264 mp4，随仓库一起发布</div>
+</section>
+
+<footer>
+  Built on <a href="https://github.com/QwenLM/Qwen3-TTS" target="_blank" rel="noopener">Qwen3-TTS</a> by the Qwen team ·
+  Qwen3-TTS-TBLive live-streaming domain adaptation demo · Audio &amp; text bundled in this open-source repository.
+</footer>
+
+<script>
+const DATA = {"oss_base": "assets/", "models": [{"key": "higgs_audio_v3", "label": "Higgs-Audio v3", "short": "Higgs", "kind": "baseline"}, {"key": "moss_tts_local_v1.5", "label": "MOSS-TTS v1.5", "short": "MOSS", "kind": "baseline"}, {"key": "qwen3_tts_base_1.7B_zs", "label": "Qwen3-TTS Base", "short": "Base", "kind": "base"}, {"key": "qwen_audio_tts_plus", "label": "Qwen-Audio-3.0-TTS-Plus", "short": "Qwen+", "kind": "closed"}, {"key": "qwen3_tts_tblive_1.7B_zs", "label": "Qwen3-TTS-TBLive (ZS)", "short": "TBLive-ZS", "kind": "ours"}, {"key": "qwen3_tts_tblive_1.7B_custom_voice", "label": "Qwen3-TTS-TBLive (CV)", "short": "TBLive-CV", "kind": "ours"}], "styles": [{"name": "专业讲解", "en": "Professional", "desc": "沉稳专业的商品讲解口吻", "speakers": [{"speaker_id": 2915, "speaker_name": "专业讲解女", "gender": "female", "ref_text": "给您买的这一套直接做免单，所以这个优惠力度也是非常大的。那主播呢，把九十七幺链接套装为大家带来到一个讲解，套装它一定是能够更好的加成到你整个护肤的抗皱效果、滋润效果的。", "samples": [{"text": "关注入会备注一下直播间三个字,给抽奖活动的话呢给大家再讲一下啊。咱们这边的话呢现在在直播间拍手机的各位朋友，我们直播间的话呢给大家去做了一个非常完善的官方售后服务保障。前几天买的不行一定要是今天的一个订单，还没有付款的宝最后一分钟给大家再讲一下直播间的官方售后。 没有必要蹲看中了之后点下方购物车直接买,我们直播间支持到一个七天无理由。您的手机的话呢是可以签收，可以拆封，可以插卡打游戏看电影拍照激活都没有问题。只要你没有恶意的人为损坏，只要你没有明显的人为使用痕迹，我们都支持七天无理由，包括三十天质量换新跟一年全国联保咱们还有运费险的一个礼赠，所以完全不需要等,在直播间听我讲再多不如自己去上手用更实际一些。", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/专业讲解/专业讲解女/t0.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/专业讲解/专业讲解女/t0.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/专业讲解/专业讲解女/t0.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/专业讲解/专业讲解女/t0.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/专业讲解/专业讲解女/t0.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/专业讲解/专业讲解女/t0.wav"}}, {"text": "呃，欢迎我们新进直播间的家人们，有什么想要了解有什么想问的呢，可以直接打在我们的一个公屏上，对于哪一个不清楚不明白的也可以来跟主播讲一讲。拍下之后咱们随时都可以直接去说啊，今天给到大家这一款的话呢是能够直接去满足到咱们的一个日常所需的。 再来给大家去上一下我们的一个超级VIP， 我们超级VIP和普通的一个vip它是不一样的。超级VIP相当于是vip的一个升级版本。Vip能用的的功能超级VIP都能用的啊。vip不能用的功能超级VIP也可以直接去使用的，可以去给您做到我们的一个全方位权益保障的啊。", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/专业讲解/专业讲解女/t1.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/专业讲解/专业讲解女/t1.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/专业讲解/专业讲解女/t1.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/专业讲解/专业讲解女/t1.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/专业讲解/专业讲解女/t1.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/专业讲解/专业讲解女/t1.wav"}}, {"text": "但是需要注意上海迪士尼的门票是不支持退的呀。 所以一定是自己需要或者说确认好出行日期再下单啊，不同的日期价格会有所变动。您这边确认好哪天出行直接拍就可以，咱们这个套餐不需要您再去预约，到时候直接刷身份证就可以入园，非常方便。迪士尼有很多好玩的项目，给大家推荐一条一日游路线吧。入园后可以先去玩飞越地平线。 感受身临其境的环球之旅，接着去加勒比海盗。承诺宝藏之战，体验刺激的航海冒险。 然后去玩七个小矮人矿山车，适合家长带小朋友一起。 中午可以去吃个饭，错峰吃饭能节省时间呀，下午可以玩创极速光轮。 超级刺激，还有雷鸣山漂流，记得提前准备好雨衣、花车巡游一定不要错过呀。当然还有米奇领衔的火车主题巡游。", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/专业讲解/专业讲解女/t2.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/专业讲解/专业讲解女/t2.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/专业讲解/专业讲解女/t2.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/专业讲解/专业讲解女/t2.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/专业讲解/专业讲解女/t2.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/专业讲解/专业讲解女/t2.wav"}}]}, {"speaker_id": 2896, "speaker_name": "专业讲解男", "gender": "male", "ref_text": "另外呢，手持熨烫机，我们还最新出了一个咖啡机啊，这些是咱们的小物品。那抽奖的话呢，就是各位只要您的单个家电实付金额只要大于三千。", "samples": [{"text": "关注入会备注一下直播间三个字,给抽奖活动的话呢给大家再讲一下啊。咱们这边的话呢现在在直播间拍手机的各位朋友，我们直播间的话呢给大家去做了一个非常完善的官方售后服务保障。前几天买的不行一定要是今天的一个订单，还没有付款的宝最后一分钟给大家再讲一下直播间的官方售后。 没有必要蹲看中了之后点下方购物车直接买,我们直播间支持到一个七天无理由。您的手机的话呢是可以签收，可以拆封，可以插卡打游戏看电影拍照激活都没有问题。只要你没有恶意的人为损坏，只要你没有明显的人为使用痕迹，我们都支持七天无理由，包括三十天质量换新跟一年全国联保咱们还有运费险的一个礼赠，所以完全不需要等,在直播间听我讲再多不如自己去上手用更实际一些。", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/专业讲解/专业讲解男/t0.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/专业讲解/专业讲解男/t0.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/专业讲解/专业讲解男/t0.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/专业讲解/专业讲解男/t0.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/专业讲解/专业讲解男/t0.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/专业讲解/专业讲解男/t0.wav"}}, {"text": "呃，欢迎我们新进直播间的家人们，有什么想要了解有什么想问的呢，可以直接打在我们的一个公屏上，对于哪一个不清楚不明白的也可以来跟主播讲一讲。拍下之后咱们随时都可以直接去说啊，今天给到大家这一款的话呢是能够直接去满足到咱们的一个日常所需的。 再来给大家去上一下我们的一个超级VIP， 我们超级VIP和普通的一个vip它是不一样的。超级VIP相当于是vip的一个升级版本。Vip能用的的功能超级VIP都能用的啊。vip不能用的功能超级VIP也可以直接去使用的，可以去给您做到我们的一个全方位权益保障的啊。", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/专业讲解/专业讲解男/t1.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/专业讲解/专业讲解男/t1.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/专业讲解/专业讲解男/t1.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/专业讲解/专业讲解男/t1.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/专业讲解/专业讲解男/t1.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/专业讲解/专业讲解男/t1.wav"}}, {"text": "但是需要注意上海迪士尼的门票是不支持退的呀。 所以一定是自己需要或者说确认好出行日期再下单啊，不同的日期价格会有所变动。您这边确认好哪天出行直接拍就可以，咱们这个套餐不需要您再去预约，到时候直接刷身份证就可以入园，非常方便。迪士尼有很多好玩的项目，给大家推荐一条一日游路线吧。入园后可以先去玩飞越地平线。 感受身临其境的环球之旅，接着去加勒比海盗。承诺宝藏之战，体验刺激的航海冒险。 然后去玩七个小矮人矿山车，适合家长带小朋友一起。 中午可以去吃个饭，错峰吃饭能节省时间呀，下午可以玩创极速光轮。 超级刺激，还有雷鸣山漂流，记得提前准备好雨衣、花车巡游一定不要错过呀。当然还有米奇领衔的火车主题巡游。", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/专业讲解/专业讲解男/t2.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/专业讲解/专业讲解男/t2.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/专业讲解/专业讲解男/t2.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/专业讲解/专业讲解男/t2.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/专业讲解/专业讲解男/t2.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/专业讲解/专业讲解男/t2.wav"}}]}]}, {"name": "贴心推荐", "en": "Warm", "desc": "温柔亲切的贴心种草口吻", "speakers": [{"speaker_id": 2826, "speaker_name": "温柔女音", "gender": "female", "ref_text": "是试用装，里面就有淡斑精华，还有防晒啊，还有九袋双萃精华试用装，这个是给会员的啊，会员的哦，是九块九，宝宝它其实是九块九，不是一分钱。", "samples": [{"text": "因为它的清洗，呃它是没有那个发热元件的浸泡水洗都可以。九号链接也是我自己的一个自用款。 非常不错的一个单品真的性价比很高价格很实惠的。在我们直播间也是卖的非常的不错。 想要追求性价比的话一定优选九号双热源加热价格两百多块钱，你在直播间找不到第二台了哈。 没有去下单的宝宝抓紧时间去下单。关注点一点入会加一加。 这边还有最后的一个三十分钟时间。给大家继续来抽奖。抽咱的一个这个呃。羊仔围裙，稍后都是可以来多多参与的。关注加一加入会点一点喽朋友们。 没有去下单的宝宝抓紧时间去下单。关注点一点入会加一加。 欢迎各位朋友来到咱的直播间了，这边的话呢是九阳的官方旗舰店。 拍下商品都是正品保证售后无忧的,价格的话呢可以说是非常的优惠了哈。 可以放心的在咱的直播间进行一个选购下单。", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/贴心推荐/温柔女音/t0.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/贴心推荐/温柔女音/t0.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/贴心推荐/温柔女音/t0.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/贴心推荐/温柔女音/t0.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/贴心推荐/温柔女音/t0.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/贴心推荐/温柔女音/t0.wav"}}, {"text": "看中喜欢的话一定不要纠结一定不要犹豫，把我们的库存名额占到手。然后拍完买完之后呢，还可以参与我们晚上八点钟的一波抽半价活动。对的，抽奖抽中你的话衣服可以给你按照呃，你今天实付款金额的一半来退现金差价。 抽不中你也没有任何损失，所以大家没有下单没有入手的，一定要先去入手一单了啊。这个在我们家的一百三十三号链接。 厚款,长款。大被子羽绒服，两边还有口袋的设计，口袋边边有拉链，口袋里面的话是加绒布的，冬天手放在里面很暖，然后没有下单的姐妹一定要先下单。我们直播间的话今天全场都有退货保的。", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/贴心推荐/温柔女音/t1.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/贴心推荐/温柔女音/t1.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/贴心推荐/温柔女音/t1.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/贴心推荐/温柔女音/t1.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/贴心推荐/温柔女音/t1.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/贴心推荐/温柔女音/t1.wav"}}, {"text": "一级帮也不错的,我先把黑金帮讲完,置顶链接黑金帮今天最后一天，然后每单五九九，现在到点抽奖了有要抽奖扣一报名哈。拉拉裤二十止尿裤，买四箱八八包，每包幺零六,四箱八四八，新粉入会减十块，老粉积分减三十。 哎八四八。减三十。叠加八八vip八百减六十。那七五八对吧？那你四箱八包每包九十七块多，九十七块多，最后一天啊。买四箱，还有送两份湿巾。店铺下单一份，直播间下单一份一共两份，买完还能抽奖，直接拍四箱", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/贴心推荐/温柔女音/t2.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/贴心推荐/温柔女音/t2.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/贴心推荐/温柔女音/t2.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/贴心推荐/温柔女音/t2.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/贴心推荐/温柔女音/t2.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/贴心推荐/温柔女音/t2.wav"}}]}, {"speaker_id": 2880, "speaker_name": "温柔男音", "gender": "male", "ref_text": "做人送礼，或者说自己去享受一下，然后马上可能说，呃，下下个月啊，中秋，然后再就是我们的。", "samples": [{"text": "因为它的清洗，呃它是没有那个发热元件的浸泡水洗都可以。九号链接也是我自己的一个自用款。 非常不错的一个单品真的性价比很高价格很实惠的。在我们直播间也是卖的非常的不错。 想要追求性价比的话一定优选九号双热源加热价格两百多块钱，你在直播间找不到第二台了哈。 没有去下单的宝宝抓紧时间去下单。关注点一点入会加一加。 这边还有最后的一个三十分钟时间。给大家继续来抽奖。抽咱的一个这个呃。羊仔围裙，稍后都是可以来多多参与的。关注加一加入会点一点喽朋友们。 没有去下单的宝宝抓紧时间去下单。关注点一点入会加一加。 欢迎各位朋友来到咱的直播间了，这边的话呢是九阳的官方旗舰店。 拍下商品都是正品保证售后无忧的,价格的话呢可以说是非常的优惠了哈。 可以放心的在咱的直播间进行一个选购下单。", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/贴心推荐/温柔男音/t0.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/贴心推荐/温柔男音/t0.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/贴心推荐/温柔男音/t0.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/贴心推荐/温柔男音/t0.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/贴心推荐/温柔男音/t0.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/贴心推荐/温柔男音/t0.wav"}}, {"text": "看中喜欢的话一定不要纠结一定不要犹豫，把我们的库存名额占到手。然后拍完买完之后呢，还可以参与我们晚上八点钟的一波抽半价活动。对的，抽奖抽中你的话衣服可以给你按照呃，你今天实付款金额的一半来退现金差价。 抽不中你也没有任何损失，所以大家没有下单没有入手的，一定要先去入手一单了啊。这个在我们家的一百三十三号链接。 厚款,长款。大被子羽绒服，两边还有口袋的设计，口袋边边有拉链，口袋里面的话是加绒布的，冬天手放在里面很暖，然后没有下单的姐妹一定要先下单。我们直播间的话今天全场都有退货保的。", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/贴心推荐/温柔男音/t1.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/贴心推荐/温柔男音/t1.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/贴心推荐/温柔男音/t1.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/贴心推荐/温柔男音/t1.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/贴心推荐/温柔男音/t1.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/贴心推荐/温柔男音/t1.wav"}}, {"text": "一级帮也不错的,我先把黑金帮讲完,置顶链接黑金帮今天最后一天，然后每单五九九，现在到点抽奖了有要抽奖扣一报名哈。拉拉裤二十止尿裤，买四箱八八包，每包幺零六,四箱八四八，新粉入会减十块，老粉积分减三十。 哎八四八。减三十。叠加八八vip八百减六十。那七五八对吧？那你四箱八包每包九十七块多，九十七块多，最后一天啊。买四箱，还有送两份湿巾。店铺下单一份，直播间下单一份一共两份，买完还能抽奖，直接拍四箱", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/贴心推荐/温柔男音/t2.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/贴心推荐/温柔男音/t2.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/贴心推荐/温柔男音/t2.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/贴心推荐/温柔男音/t2.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/贴心推荐/温柔男音/t2.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/贴心推荐/温柔男音/t2.wav"}}]}]}, {"name": "激情促销", "en": "Energetic", "desc": "高能热烈的限时促单口吻", "speakers": [{"speaker_id": 2804, "speaker_name": "激情促销女", "gender": "female", "ref_text": "而且它的保湿力很强，能够做到八小时的补水保湿，八小时，并且它的整个的防晒技术做到升级，有修复的能力，修复的能力。", "samples": [{"text": "这一台的话呢给给我们开心，上个九号链接，然后喜欢的话你直接冲就可以了啊。来六三九九到手今天拍，今天发发顺丰，发顺丰全部给大家备注加急的。然后的话呢三年质保、电池保一年七天无理由。 送全套配件里面包含充电头数据线魔可卡针礼品都有的。然后的话呢机子只要你拍，买回去从你收到机子开始算啊，从你收到机子开始算这台六三九九到手，六三九九到手。Ok我们的开心没问题的话直接去拍。 来弹窗链接九号链接六三九九，立刻去拍就可以了。因为看到你已经点关注了所以说主播非常聪明，直接给你减了一百块钱到手，直接去拍即可。 还有要问的可以直接打字啊宝宝们。", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/激情促销/激情促销女/t0.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/激情促销/激情促销女/t0.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/激情促销/激情促销女/t0.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/激情促销/激情促销女/t0.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/激情促销/激情促销女/t0.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/激情促销/激情促销女/t0.wav"}}, {"text": "现在只有七十八个人参与免单，还没有参与免单的快点参与进来等到,晚上我们十点钟准时开奖啊有订单就能参与，立即下单今天抽的是小天鹅的。 这个一点一洗净比的，咱们家的一个洗衣机右上角的话这个位置点一下，点击到这边啊立即下单就能参与到咱们限时免单。 立即下单有订单都能参与，你说哎我要是没有中我不想要怎么办。没有中不想要也是没问题的好不好？咱们重在参与。 你们参与的人越多，到时候啊比如今天破个一百人下次的免单奖品，我们可以给大家申请到更加丰富的免单奖品。所以大家,以想要以后哎我们直播间不定时开开免单的您都可以参与进来。 啊每次免单都可以参与直到您中了为止对吧，中了你下次还能继续参与，怎么中奖的话，很简单我们是直播间公平公正的用到咱们家的小组件开奖，十点钟会准时开奖。 发票价格这个是开个人发票，个人发票应该是按照。这个实际付款价格算的，具具体问一下客服。", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/激情促销/激情促销女/t1.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/激情促销/激情促销女/t1.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/激情促销/激情促销女/t1.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/激情促销/激情促销女/t1.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/激情促销/激情促销女/t1.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/激情促销/激情促销女/t1.wav"}}, {"text": "各方面都是没有问题的。像吃鸡、第五人格这些都完全不在话下。然后的话拍照也是非常大的一个拍照像素。 功能这些全正常，六点七八寸的一个屏幕。所以说机子非常棒，到手直接用就可以了。声音各方面非常在线而且健康值还有九十五。到手直接用就可以了啊。那声音听听，声音响亮清脆而且拍照的话呢它不只有广角。而且的话呢还带了一百二十倍的放大追焦，这个可以吗我们的那个，风林天下宝子这个可以吗？然后的话拍照还有很多多样性的你看。 多样性长曝光电影、全景模式啊，高像素专业的都有的。你喜欢哪种就用哪种,好吧。然后前置也是有的，前置也是带广角然后的话也有美颜自带美颜功能,好吗？", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/激情促销/激情促销女/t2.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/激情促销/激情促销女/t2.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/激情促销/激情促销女/t2.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/激情促销/激情促销女/t2.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/激情促销/激情促销女/t2.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/激情促销/激情促销女/t2.wav"}}]}, {"speaker_id": 2801, "speaker_name": "激情促销男", "gender": "male", "ref_text": "大干皮，它的滋润度不是那么的够。第二个，我推荐大家只有晚上用，为什么叫做黑绷带？", "samples": [{"text": "这一台的话呢给给我们开心，上个九号链接，然后喜欢的话你直接冲就可以了啊。来六三九九到手今天拍，今天发发顺丰，发顺丰全部给大家备注加急的。然后的话呢三年质保、电池保一年七天无理由。 送全套配件里面包含充电头数据线魔可卡针礼品都有的。然后的话呢机子只要你拍，买回去从你收到机子开始算啊，从你收到机子开始算这台六三九九到手，六三九九到手。Ok我们的开心没问题的话直接去拍。 来弹窗链接九号链接六三九九，立刻去拍就可以了。因为看到你已经点关注了所以说主播非常聪明，直接给你减了一百块钱到手，直接去拍即可。 还有要问的可以直接打字啊宝宝们。", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/激情促销/激情促销男/t0.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/激情促销/激情促销男/t0.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/激情促销/激情促销男/t0.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/激情促销/激情促销男/t0.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/激情促销/激情促销男/t0.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/激情促销/激情促销男/t0.wav"}}, {"text": "现在只有七十八个人参与免单，还没有参与免单的快点参与进来等到,晚上我们十点钟准时开奖啊有订单就能参与，立即下单今天抽的是小天鹅的。 这个一点一洗净比的，咱们家的一个洗衣机右上角的话这个位置点一下，点击到这边啊立即下单就能参与到咱们限时免单。 立即下单有订单都能参与，你说哎我要是没有中我不想要怎么办。没有中不想要也是没问题的好不好？咱们重在参与。 你们参与的人越多，到时候啊比如今天破个一百人下次的免单奖品，我们可以给大家申请到更加丰富的免单奖品。所以大家,以想要以后哎我们直播间不定时开开免单的您都可以参与进来。 啊每次免单都可以参与直到您中了为止对吧，中了你下次还能继续参与，怎么中奖的话，很简单我们是直播间公平公正的用到咱们家的小组件开奖，十点钟会准时开奖。 发票价格这个是开个人发票，个人发票应该是按照。这个实际付款价格算的，具具体问一下客服。", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/激情促销/激情促销男/t1.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/激情促销/激情促销男/t1.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/激情促销/激情促销男/t1.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/激情促销/激情促销男/t1.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/激情促销/激情促销男/t1.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/激情促销/激情促销男/t1.wav"}}, {"text": "各方面都是没有问题的。像吃鸡、第五人格这些都完全不在话下。然后的话拍照也是非常大的一个拍照像素。 功能这些全正常，六点七八寸的一个屏幕。所以说机子非常棒，到手直接用就可以了。声音各方面非常在线而且健康值还有九十五。到手直接用就可以了啊。那声音听听，声音响亮清脆而且拍照的话呢它不只有广角。而且的话呢还带了一百二十倍的放大追焦，这个可以吗我们的那个，风林天下宝子这个可以吗？然后的话拍照还有很多多样性的你看。 多样性长曝光电影、全景模式啊，高像素专业的都有的。你喜欢哪种就用哪种,好吧。然后前置也是有的，前置也是带广角然后的话也有美颜自带美颜功能,好吗？", "audios": {"higgs_audio_v3": "demo_wavs/higgs_audio_v3/audios/激情促销/激情促销男/t2.wav", "moss_tts_local_v1.5": "demo_wavs/moss_tts_local_v1.5/audios/激情促销/激情促销男/t2.wav", "qwen3_tts_base_1.7B_zs": "demo_wavs/qwen3_tts_base_1.7B_zs/audios/激情促销/激情促销男/t2.wav", "qwen3_tts_tblive_1.7B_zs": "demo_wavs/qwen3_tts_tblive_1.7B_zs/audios/激情促销/激情促销男/t2.wav", "qwen_audio_tts_plus": "demo_wavs/qwen_audio_tts_plus/audios/激情促销/激情促销男/t2.wav", "qwen3_tts_tblive_1.7B_custom_voice": "demo_wavs/qwen3_tts_tblive_1.7B_custom_voice/audios/激情促销/激情促销男/t2.wav"}}]}]}]};
+const OSS_BASE = DATA.oss_base;
+document.getElementById("ossBase").textContent = OSS_BASE;
+
+const tabsEl = document.getElementById("tabs");
+const descEl = document.getElementById("styleDesc");
+const panelEl = document.getElementById("panel");
+
+function ossUrl(key){ return OSS_BASE + key.split("/").map(encodeURIComponent).join("/"); }
+
+function renderStyle(idx){
+  const st = DATA.styles[idx];
+  document.querySelectorAll("#tabs .tab").forEach((t,i)=> t.classList.toggle("active", i===idx));
+  descEl.textContent = st.desc;
+  panelEl.innerHTML = "";
+  st.speakers.forEach(spk => {
+    const card = document.createElement("div");
+    card.className = "spk";
+    const chipClass = spk.gender === "female" ? "female" : "male";
+    const chipText  = spk.gender === "female" ? "女声 Female" : "男声 Male";
+    let html = `
+      <div class="spk-head">
+        <span class="spk-name">${spk.speaker_name}</span>
+        <span class="chip ${chipClass}">${chipText}</span>
+        <span class="spk-id">#${spk.speaker_id}</span>
+      </div>`;
+    spk.samples.forEach((s, i) => {
+      const cols = DATA.models.map(m => {
+        const url = ossUrl(s.audios[m.key]);
+        const cls = m.kind === "ours" ? "player ours"
+                  : m.kind === "base" ? "player base"
+                  : m.kind === "closed" ? "player closed"
+                  : "player baseline";
+        const tagCls = m.kind === "ours" ? "p-tag ours"
+                     : m.kind === "base" ? "p-tag base"
+                     : m.kind === "closed" ? "p-tag closed"
+                     : "p-tag baseline";
+        const badge = m.kind === "ours" ? `<span class="badge badge-ours">OURS</span>`
+                    : m.kind === "closed" ? `<span class="badge badge-closed">closed</span>`
+                    : "";
+        return `
+          <div class="${cls}">
+            <div class="p-top"><span class="${tagCls}" title="${m.label}">${m.label}</span>${badge}</div>
+            <audio controls preload="none" src="${url}"></audio>
+          </div>`;
+      }).join("");
+      html += `
+        <div class="sample">
+          <span class="s-label">Sample ${i+1} / ${spk.samples.length}</span>
+          <div class="s-text" onclick="this.classList.toggle('open')">${s.text}</div>
+          <div class="players">${cols}</div>
+        </div>`;
+    });
+    card.innerHTML = html;
+    panelEl.appendChild(card);
+  });
+}
+
+DATA.styles.forEach((st, i) => {
+  const b = document.createElement("button");
+  b.className = "tab" + (i===0 ? " active" : "");
+  b.innerHTML = `${st.name}<span class="en">${st.en}</span>`;
+  b.onclick = () => renderStyle(i);
+  tabsEl.appendChild(b);
+});
+renderStyle(0);
+
+const INSTRUCT_DATA = {
+  base: "assets/instruct_control_demo/",
+  groups: [
+    { name:"停顿控制", desc:"在关键处插入自然停顿，制造悬念、强调卖点", tag:'<span class="tag tag-sil">⏸ &lt;sil_L*&gt;</span>', samples:[
+      { text:"你觉得这个价格贵吗<sil_L4>我跟你说,专柜同款要三倍的价钱.", audio:"sil_L4_spk26_9_4.wav" },
+      { text:"两杯奶茶的钱买一件外套,过分吗<sil_L4>一点都不过分,姐妹们.", audio:"sil_L4_spk1_11_4.wav" }
+    ]},
+    { name:"语速放慢", desc:"放慢语速，逐字突出价格与核心信息", tag:'<span class="tag tag-slow">⏪ [speed_d2]</span>', samples:[
+      { text:"别的我都可以不讲,你就给我记住一点,[speed_d2]今天到手价,一百五十九.", audio:"speed_d2_spk1_5_5.wav" },
+      { text:"呃再跟你们说一遍你们听好了啊,[speed_d2]日抛三十片装,单片算下来,不到两块钱.", audio:"speed_d2_spk1_1_2.wav" }
+    ]},
+    { name:"语速加快", desc:"加快语速，营造上头的抢购紧迫感", tag:'<span class="tag tag-fast">⏩ [speed_e2]</span>', samples:[
+      { text:"机制就这么简单,买一送一还能叠券,[speed_e2]想要的家人们直接给我冲.", audio:"speed_e2_spk1_3_4.wav" },
+      { text:"咱们这个链接上架就秒了一半,价格的话真的没话说了,[speed_e2]赶紧给我拍起来.", audio:"speed_e2_spk4_2_1.wav" }
+    ]},
+    { name:"组合控制", desc:"停顿与快慢混合，逼近真实主播的节奏起伏", tag:'<span class="tag tag-sil">⏸</span> + <span class="tag tag-slow">⏪</span> <span class="tag tag-fast">⏩</span>', samples:[
+      { text:"家人们注意了,这款面霜原价五百九,直播间到手价你们知道是多少吗<sil_L2>?[speed_d2]只要九十九<sil_L2>,别犹豫了赶紧冲.", audio:"combo_spk1_0_7.wav" },
+      { text:"有没有姐妹想了解这款面霜?<sil_L2>这款面霜,我真的想让姐妹们都试试,[speed_d2]超级好用,[speed_e2]有人问敏感肌可以用吗?当然可以.", audio:"combo_spk115_2_6.wav" }
+    ]}
+  ]
+};
+
+function iUrl(f){ return INSTRUCT_DATA.base + encodeURIComponent(f); }
+function hlTags(t){
+  return t
+    .replace(/<(sil_L\d)>/g, '<span class="tag tag-sil">⏸ $1</span>')
+    .replace(/\[(speed_e\d)\]/g, '<span class="tag tag-fast">⏩ $1</span>')
+    .replace(/\[(speed_d\d)\]/g, '<span class="tag tag-slow">⏪ $1</span>');
+}
+
+document.getElementById("ctrlLegend").innerHTML = [
+  ['tag-sil','⏸ &lt;sil_L2/L4&gt;','插入停顿'],
+  ['tag-slow','⏪ [speed_d2]','放慢语速'],
+  ['tag-fast','⏩ [speed_e2]','加快语速']
+].map(([c,t,d]) => `<div class="leg"><span class="tag ${c}">${t}</span><span class="leg-txt">${d}</span></div>`).join("");
+
+const ctrlPanel = document.getElementById("ctrlPanel");
+INSTRUCT_DATA.groups.forEach(g => {
+  const grp = document.createElement("div");
+  grp.className = "ctrl-group";
+  const cards = g.samples.map(s => `
+    <div class="ccard">
+      <div class="c-text">${hlTags(s.text)}</div>
+      <div class="player ours">
+        <div class="p-top"><span class="p-tag ours">Qwen3-TTS-TBLive</span><span class="badge badge-ours">OURS</span></div>
+        <audio controls preload="none" src="${iUrl(s.audio)}"></audio>
+      </div>
+    </div>`).join("");
+  grp.innerHTML = `
+    <div class="ctrl-grp-head">
+      ${g.tag}
+      <span class="g-name">${g.name}</span>
+      <span class="g-desc">${g.desc}</span>
+    </div>
+    <div class="cgrid">${cards}</div>`;
+  ctrlPanel.appendChild(grp);
+});
+
+const VIDEO_DATA = {"oss_base": "assets/demo_videos/", "cards": [{"style": "专业讲解", "speaker_name": "专业讲解女", "gender": "female", "voice": "nv3", "files": ["nv3_nv3_t0_20260725_162416.mp4", "nv3_nv3_t1_20260725_165431.mp4", "nv3_nv3_t2_20260725_171726.mp4"], "texts": ["关注入会备注一下直播间三个字,给抽奖活动的话呢给大家再讲一下啊。咱们这边的话呢现在在直播间拍手机的各位朋友，我们直播间的话呢给大家去做了一个非常完善的官方售后服务保障。前几天买的不行一定要是今天的一个订单，还没有付款的宝最后一分钟给大家再讲一下直播间的官方售后。 没有必要蹲看中了之后点下方购物车直接买,我们直播间支持到一个七天无理由。您的手机的话呢是可以签收，可以拆封，可以插卡打游戏看电影拍照激活都没有问题。只要你没有恶意的人为损坏，只要你没有明显的人为使用痕迹，我们都支持七天无理由，包括三十天质量换新跟一年全国联保咱们还有运费险的一个礼赠，所以完全不需要等,在直播间听我讲再多不如自己去上手用更实际一些。", "呃，欢迎我们新进直播间的家人们，有什么想要了解有什么想问的呢，可以直接打在我们的一个公屏上，对于哪一个不清楚不明白的也可以来跟主播讲一讲。拍下之后咱们随时都可以直接去说啊，今天给到大家这一款的话呢是能够直接去满足到咱们的一个日常所需的。 再来给大家去上一下我们的一个超级VIP， 我们超级VIP和普通的一个vip它是不一样的。超级VIP相当于是vip的一个升级版本。Vip能用的的功能超级VIP都能用的啊。vip不能用的功能超级VIP也可以直接去使用的，可以去给您做到我们的一个全方位权益保障的啊。", "但是需要注意上海迪士尼的门票是不支持退的呀。 所以一定是自己需要或者说确认好出行日期再下单啊，不同的日期价格会有所变动。您这边确认好哪天出行直接拍就可以，咱们这个套餐不需要您再去预约，到时候直接刷身份证就可以入园，非常方便。迪士尼有很多好玩的项目，给大家推荐一条一日游路线吧。入园后可以先去玩飞越地平线。 感受身临其境的环球之旅，接着去加勒比海盗。承诺宝藏之战，体验刺激的航海冒险。 然后去玩七个小矮人矿山车，适合家长带小朋友一起。 中午可以去吃个饭，错峰吃饭能节省时间呀，下午可以玩创极速光轮。 超级刺激，还有雷鸣山漂流，记得提前准备好雨衣、花车巡游一定不要错过呀。当然还有米奇领衔的火车主题巡游。"]}, {"style": "贴心推荐", "speaker_name": "温柔男音", "gender": "male", "voice": "nan", "files": ["nan_nan_t0_20260725_155237.mp4", "nan_nan_t1_20260725_162614.mp4", "nan_nan_t2_20260725_165026.mp4"], "texts": ["因为它的清洗，呃它是没有那个发热元件的浸泡水洗都可以。九号链接也是我自己的一个自用款。 非常不错的一个单品真的性价比很高价格很实惠的。在我们直播间也是卖的非常的不错。 想要追求性价比的话一定优选九号双热源加热价格两百多块钱，你在直播间找不到第二台了哈。 没有去下单的宝宝抓紧时间去下单。关注点一点入会加一加。 这边还有最后的一个三十分钟时间。给大家继续来抽奖。抽咱的一个这个呃。羊仔围裙，稍后都是可以来多多参与的。关注加一加入会点一点喽朋友们。 没有去下单的宝宝抓紧时间去下单。关注点一点入会加一加。 欢迎各位朋友来到咱的直播间了，这边的话呢是九阳的官方旗舰店。 拍下商品都是正品保证售后无忧的,价格的话呢可以说是非常的优惠了哈。 可以放心的在咱的直播间进行一个选购下单。", "看中喜欢的话一定不要纠结一定不要犹豫，把我们的库存名额占到手。然后拍完买完之后呢，还可以参与我们晚上八点钟的一波抽半价活动。对的，抽奖抽中你的话衣服可以给你按照呃，你今天实付款金额的一半来退现金差价。 抽不中你也没有任何损失，所以大家没有下单没有入手的，一定要先去入手一单了啊。这个在我们家的一百三十三号链接。 厚款,长款。大被子羽绒服，两边还有口袋的设计，口袋边边有拉链，口袋里面的话是加绒布的，冬天手放在里面很暖，然后没有下单的姐妹一定要先下单。我们直播间的话今天全场都有退货保的。", "一级帮也不错的,我先把黑金帮讲完,置顶链接黑金帮今天最后一天，然后每单五九九，现在到点抽奖了有要抽奖扣一报名哈。拉拉裤二十止尿裤，买四箱八八包，每包幺零六,四箱八四八，新粉入会减十块，老粉积分减三十。 哎八四八。减三十。叠加八八vip八百减六十。那七五八对吧？那你四箱八包每包九十七块多，九十七块多，最后一天啊。买四箱，还有送两份湿巾。店铺下单一份，直播间下单一份一共两份，买完还能抽奖，直接拍四箱"]}, {"style": "激情促销", "speaker_name": "激情促销女", "gender": "female", "voice": "nv1", "files": ["nv1_nv1_t0_20260724_232245.mp4", "nv1_nv1_t1_20260724_235041.mp4", "nv1_nv1_t2_20260725_002634.mp4"], "texts": ["这一台的话呢给给我们开心，上个九号链接，然后喜欢的话你直接冲就可以了啊。来六三九九到手今天拍，今天发发顺丰，发顺丰全部给大家备注加急的。然后的话呢三年质保、电池保一年七天无理由。 送全套配件里面包含充电头数据线魔可卡针礼品都有的。然后的话呢机子只要你拍，买回去从你收到机子开始算啊，从你收到机子开始算这台六三九九到手，六三九九到手。Ok我们的开心没问题的话直接去拍。 来弹窗链接九号链接六三九九，立刻去拍就可以了。因为看到你已经点关注了所以说主播非常聪明，直接给你减了一百块钱到手，直接去拍即可。 还有要问的可以直接打字啊宝宝们。", "现在只有七十八个人参与免单，还没有参与免单的快点参与进来等到,晚上我们十点钟准时开奖啊有订单就能参与，立即下单今天抽的是小天鹅的。 这个一点一洗净比的，咱们家的一个洗衣机右上角的话这个位置点一下，点击到这边啊立即下单就能参与到咱们限时免单。 立即下单有订单都能参与，你说哎我要是没有中我不想要怎么办。没有中不想要也是没问题的好不好？咱们重在参与。 你们参与的人越多，到时候啊比如今天破个一百人下次的免单奖品，我们可以给大家申请到更加丰富的免单奖品。所以大家,以想要以后哎我们直播间不定时开开免单的您都可以参与进来。 啊每次免单都可以参与直到您中了为止对吧，中了你下次还能继续参与，怎么中奖的话，很简单我们是直播间公平公正的用到咱们家的小组件开奖，十点钟会准时开奖。 发票价格这个是开个人发票，个人发票应该是按照。这个实际付款价格算的，具具体问一下客服。", "各方面都是没有问题的。像吃鸡、第五人格这些都完全不在话下。然后的话拍照也是非常大的一个拍照像素。 功能这些全正常，六点七八寸的一个屏幕。所以说机子非常棒，到手直接用就可以了。声音各方面非常在线而且健康值还有九十五。到手直接用就可以了啊。那声音听听，声音响亮清脆而且拍照的话呢它不只有广角。而且的话呢还带了一百二十倍的放大追焦，这个可以吗我们的那个，风林天下宝子这个可以吗？然后的话拍照还有很多多样性的你看。 多样性长曝光电影、全景模式啊，高像素专业的都有的。你喜欢哪种就用哪种,好吧。然后前置也是有的，前置也是带广角然后的话也有美颜自带美颜功能,好吗？"]}]};
+const V_BASE = VIDEO_DATA.oss_base;
+document.getElementById("vossBase").textContent = V_BASE;
+function vUrl(style, file){ return V_BASE + encodeURIComponent(style) + "/" + encodeURIComponent(file); }
+const vgrid = document.getElementById("vgrid");
+VIDEO_DATA.cards.forEach((c, ci) => {
+  c.files = c.files.slice(0,1); c.texts = c.texts.slice(0,1);
+  const chipClass = c.gender === "female" ? "female" : "male";
+  const chipText  = c.gender === "female" ? "女声 Female" : "男声 Male";
+  const card = document.createElement("div");
+  card.className = "vcard";
+  card.innerHTML = `
+    <div class="vcard-head">
+      <span class="v-style">${c.style}</span>
+      <span class="spk-name">${c.speaker_name}</span>
+      <span class="chip ${chipClass}">${chipText}</span>
+      <span class="badge badge-ours">TBLive</span>
+    </div>
+    <div class="v-wrap">
+      <video id="v-${ci}" controls preload="none" playsinline src="${vUrl(c.style, c.files[0])}"></video>
+    </div>
+    <div class="v-text" id="vt-${ci}" onclick="this.classList.toggle('open')">${c.texts[0]}</div>`;
+  vgrid.appendChild(card);
+});
+</script>
+
+</body>
+</html>
